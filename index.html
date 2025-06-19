@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>视频裁切与播放</title>
+  <style>
+    #playBtn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      background: #4CAF50;
+      color: white;
+      font-size: 16px;
+    }
+    #controls {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h3 id="prompt">选择本地视频并设置裁切时长（不超过 1 秒）</h3>
+  <input type="file" id="fileInput" accept="video/*" />
+  <div id="controls" style="display:none;">
+    <label>开始时间 (秒): <input type="number" step="0.1" id="start" value="0"></label>
+    <label>结束时间 (秒): <input type="number" step="0.1" id="end" value="1"></label>
+    <button id="apply">应用</button>
+  </div>
+  <video id="video" width="400" controls style="display:none;"></video>
+  <br/>
+  <button id="playBtn" style="display:none;">播放</button>
+
+<script>
+const fileInput = document.getElementById('fileInput');
+const video = document.getElementById('video');
+const playBtn = document.getElementById('playBtn');
+const controls = document.getElementById('controls');
+const startInput = document.getElementById('start');
+const endInput = document.getElementById('end');
+const applyBtn = document.getElementById('apply');
+const prompt = document.getElementById('prompt');
+
+let startTime = 0;
+let endTime = 1;
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  video.src = url;
+  video.style.display = 'block';
+  playBtn.style.display = 'inline-block';
+  controls.style.display = 'block';
+  startInput.value = 0;
+  endInput.value = Math.min(1, video.duration || 1);
+});
+
+applyBtn.addEventListener('click', () => {
+  startTime = parseFloat(startInput.value) || 0;
+  endTime = parseFloat(endInput.value) || 0;
+  if (endTime - startTime > 1 || endTime <= startTime) {
+    alert('结束时间需要大于开始时间，且时长不能超过 1 秒');
+    return;
+  }
+  prompt.style.display = 'none';
+  fileInput.style.display = 'none';
+  controls.style.display = 'none';
+});
+
+playBtn.addEventListener('click', () => {
+  if (!video.src) return;
+  video.currentTime = startTime;
+  video.play();
+});
+
+video.addEventListener('timeupdate', () => {
+  if (video.currentTime >= endTime) {
+    video.pause();
+  }
+});
+</script>
+</body>
+</html>
